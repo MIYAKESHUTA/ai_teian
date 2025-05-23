@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>料理アキネーターAI</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    button { margin: 10px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h1>料理アキネーター AI 🍽️</h1>
+  <div id="conversation"></div>
+  <p id="question">初期化中...</p>
+  <button onclick="sendAnswer('はい')">はい</button>
+  <button onclick="sendAnswer('いいえ')">いいえ</button>
+
+  <script>
+    let history = [];
+
+    async function fetchReply() {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ history }),
+      });
+
+      const data = await res.json();
+      const assistantReply = data.reply.content;
+
+      history.push({ role: "assistant", content: assistantReply });
+      document.getElementById("question").textContent = assistantReply;
+
+      const convoDiv = document.getElementById("conversation");
+      convoDiv.innerHTML += `<p><strong>AI:</strong> ${assistantReply}</p>`;
+    }
+
+    async function sendAnswer(answer) {
+      history.push({ role: "user", content: answer });
+      const convoDiv = document.getElementById("conversation");
+      convoDiv.innerHTML += `<p><strong>あなた:</strong> ${answer}</p>`;
+      await fetchReply();
+    }
+
+    // 初回呼び出し
+    fetchReply();
+  </script>
+</body>
+</html>
